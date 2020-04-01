@@ -1,0 +1,31 @@
+version: "3.7"
+
+services:
+  psql:
+    image: postgres:9.5
+    restart: always
+    env_file:
+       - ./build/app.env
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./logs/postgres:/var/log/postgresql/
+
+  web:
+    restart: always
+    env_file:
+       - ./build/app.env
+    command: bash -c "/app/run_server.bash"
+    build:
+      context: ./build/
+    volumes:
+      - ./app/:/app/
+      - ./logs/web/:/var/logs/web/
+    ports:
+      - 8000:8000
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 26677
+        hard: 46677
+    depends_on:
+      - psql
